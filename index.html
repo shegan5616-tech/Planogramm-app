@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Планограмма</title>
 
 <style>
 
 body{
-font-family:Arial,sans-serif;
+font-family:Arial;
 max-width:900px;
 margin:auto;
 padding:15px;
@@ -32,7 +34,6 @@ box-sizing:border-box;
 button{
 border:0;
 border-radius:8px;
-cursor:pointer;
 }
 
 .blue{
@@ -64,111 +65,174 @@ color:white;
 padding:10px;
 margin:5px;
 border-radius:8px;
-display:flex;
-gap:10px;
-align-items:center;
 }
 
-.remove{
-background:white;
-color:red;
-width:auto;
-padding:5px;
-}
-
-.shelfButton{
-background:#ddd;
-}
-
-.active{
-background:#2196f3;
-color:white;
-}
 
 </style>
 
 </head>
 
+
 <body>
 
-<h2>Планограмма магазина</h2>
+
+<h2>
+Планограмма магазина
+</h2>
 
 
 <div class="card">
 
-<h3>Полки</h3>
 
-<input id="newShelfWidth"
-placeholder="Ширина новой полки см">
+<h3>
+Резервная копия
+</h3>
+
+
+<button class="blue"
+onclick="exportData()">
+
+Скачать планограмму
+
+</button>
+
+
+<input type="file"
+id="importFile">
+
+
+<button class="green"
+onclick="importData()">
+
+Загрузить планограмму
+
+</button>
+
+
+</div>
+
+
+
+
+<div class="card">
+
+
+<h3>
+Полки
+</h3>
+
+
+<input id="newWidth"
+placeholder="Ширина полки см">
+
 
 <button class="blue"
 onclick="addShelf()">
+
 Добавить полку
+
 </button>
 
-<div id="shelfList"></div>
+
+<div id="shelves"></div>
+
 
 </div>
+
+
 
 
 
 <div class="card">
 
-<h3 id="currentShelfTitle">
-Выберите полку
+
+<h3 id="title">
+Полка
 </h3>
 
+
 <div id="info">
+
 </div>
+
 
 <div id="shelf"
 class="shelf">
-</div>
 
 </div>
+
+
+</div>
+
+
 
 
 
 <div class="card">
 
-<h3>Товар</h3>
+
+<h3>
+Товар
+</h3>
+
 
 <input id="name"
 placeholder="Название">
 
+
 <input id="barcode"
 placeholder="Штрихкод">
 
+
 <input id="width"
-placeholder="Ширина см"
-type="number">
+type="number"
+placeholder="Ширина см">
+
 
 
 <button class="green"
 onclick="addProduct()">
+
 Добавить на полку
+
 </button>
 
+
+<button class="blue"
+onclick="saveProduct()">
+
+Сохранить товар
+
+</button>
+
+
+
 </div>
+
+
 
 
 
 <div class="card">
 
-<h3>Каталог</h3>
 
-<button class="blue"
-onclick="saveProduct()">
-Сохранить текущий товар
-</button>
+<h3>
+Каталог
+</h3>
 
-<div id="catalog"></div>
+
+<div id="catalog">
+
+</div>
+
 
 </div>
 
 
 
+
 <script>
+
 
 
 let shelves =
@@ -177,53 +241,65 @@ localStorage.getItem("shelves") || "[]"
 );
 
 
+
 let catalog =
 JSON.parse(
 localStorage.getItem("catalog") || "[]"
 );
 
 
-let currentShelf = 0;
+
+let current = 0;
 
 
 
-function saveShelves(){
+function save(){
 
 localStorage.setItem(
 "shelves",
 JSON.stringify(shelves)
 );
 
+
+localStorage.setItem(
+"catalog",
+JSON.stringify(catalog)
+);
+
+
 }
+
+
 
 
 
 function addShelf(){
 
-let width =
+
+let w =
 Number(
 document.getElementById(
-"newShelfWidth"
+"newWidth"
 ).value
 );
 
 
-if(!width){
-alert("Введите ширину");
-return;
-}
+
+if(!w)return;
+
 
 
 shelves.push({
 
-width:width,
+width:w,
 
 products:[]
 
 });
 
 
-saveShelves();
+save();
+
 
 renderShelves();
 
@@ -232,6 +308,7 @@ selectShelf(
 shelves.length-1
 );
 
+
 }
 
 
@@ -239,45 +316,41 @@ shelves.length-1
 
 function renderShelves(){
 
+
 let div =
 document.getElementById(
-"shelfList"
+"shelves"
 );
 
+
 div.innerHTML="";
+
 
 
 shelves.forEach(
 (s,i)=>{
 
 
-let btn =
+let b =
 document.createElement(
 "button"
 );
 
 
-btn.className =
-"shelfButton";
+b.innerText =
+"Полка "+
+(i+1)+
+" "+
+s.width+
+"см";
 
 
-if(i==currentShelf)
-btn.className="active";
+b.onclick=()=>selectShelf(i);
 
 
-btn.innerText =
-"Полка "+(i+1)+
-" ("+s.width+" см)";
 
+div.appendChild(b);
 
-btn.onclick=()=>{
-
-selectShelf(i);
-
-};
-
-
-div.appendChild(btn);
 
 
 }
@@ -289,9 +362,13 @@ div.appendChild(btn);
 
 
 
+
+
 function selectShelf(i){
 
-currentShelf=i;
+
+current=i;
+
 
 renderShelves();
 
@@ -302,20 +379,22 @@ renderShelf();
 
 
 
+
+
 function renderShelf(){
 
-let shelf =
-shelves[currentShelf];
+
+let s =
+shelves[current];
 
 
-if(!shelf)
-return;
+if(!s)return;
 
 
 document.getElementById(
-"currentShelfTitle"
+"title"
 ).innerText =
-"Полка "+(currentShelf+1);
+"Полка "+(current+1);
 
 
 
@@ -331,62 +410,32 @@ div.innerHTML="";
 let used=0;
 
 
-shelf.products.forEach(
-(p,index)=>{
+
+s.products.forEach(
+(p)=>{
 
 
 used+=p.width;
 
 
-let item =
+let x =
 document.createElement(
 "div"
 );
 
 
-item.className="product";
+x.className="product";
 
 
-item.innerHTML =
+x.innerText =
 p.name+
-" ("+
+" "+
 p.width+
-"см)";
-
-
-let del =
-document.createElement(
-"button"
-);
-
-
-del.innerText="✕";
-
-del.className="remove";
-
-
-del.onclick=()=>{
-
-
-shelf.products.splice(
-index,
-1
-);
-
-
-saveShelves();
-
-renderShelf();
-
-
-};
+"см";
 
 
 
-item.appendChild(del);
-
-
-div.appendChild(item);
+div.appendChild(x);
 
 
 }
@@ -394,14 +443,15 @@ div.appendChild(item);
 );
 
 
+
 document.getElementById(
 "info"
 ).innerText =
 
-"Занято: "+
+"Занято "+
 used+
-" см | Свободно: "+
-(shelf.width-used)+
+" см. Свободно "+
+(s.width-used)+
 " см";
 
 
@@ -410,20 +460,16 @@ used+
 
 
 
+
+
 function addProduct(){
 
 
-let shelf =
-shelves[currentShelf];
+let s =
+shelves[current];
 
 
-if(!shelf){
-
-alert("Создайте полку");
-
-return;
-
-}
+if(!s)return;
 
 
 
@@ -431,6 +477,7 @@ let name =
 document.getElementById(
 "name"
 ).value;
+
 
 
 let width =
@@ -442,13 +489,8 @@ document.getElementById(
 
 
 
-if(!name || !width)
-return;
-
-
-
 let used =
-shelf.products.reduce(
+s.products.reduce(
 (a,b)=>a+b.width,
 0
 );
@@ -456,8 +498,7 @@ shelf.products.reduce(
 
 
 if(
-used+width >
-shelf.width
+used+width>s.width
 ){
 
 alert(
@@ -470,7 +511,7 @@ return;
 
 
 
-shelf.products.push({
+s.products.push({
 
 name:name,
 
@@ -479,7 +520,8 @@ width:width
 });
 
 
-saveShelves();
+save();
+
 
 renderShelf();
 
@@ -492,8 +534,7 @@ renderShelf();
 function saveProduct(){
 
 
-let product={
-
+catalog.push({
 
 name:
 document.getElementById(
@@ -515,38 +556,35 @@ document.getElementById(
 )
 
 
-};
+});
 
 
-
-catalog.push(product);
-
-
-localStorage.setItem(
-"catalog",
-JSON.stringify(catalog)
-);
+save();
 
 
 renderCatalog();
 
+
 }
+
 
 
 
 function renderCatalog(){
 
 
-let div =
+let d =
 document.getElementById(
 "catalog"
 );
 
 
-div.innerHTML="";
+d.innerHTML="";
 
 
-catalog.forEach(p=>{
+
+catalog.forEach(
+(p)=>{
 
 
 let b =
@@ -575,6 +613,7 @@ document.getElementById(
 ).value=p.width;
 
 
+
 addProduct();
 
 
@@ -582,11 +621,116 @@ addProduct();
 
 
 
-div.appendChild(b);
+d.appendChild(b);
+
+
+}
+
+);
+
+
+}
 
 
 
-});
+
+function exportData(){
+
+
+let data={
+
+shelves:shelves,
+
+catalog:catalog
+
+};
+
+
+
+let blob =
+new Blob(
+[
+JSON.stringify(data)
+],
+{
+type:"application/json"
+}
+);
+
+
+
+let a =
+document.createElement(
+"a"
+);
+
+
+a.href =
+URL.createObjectURL(blob);
+
+
+a.download =
+"planogram.json";
+
+
+a.click();
+
+
+}
+
+
+
+
+
+function importData(){
+
+
+let file =
+document.getElementById(
+"importFile"
+).files[0];
+
+
+
+let reader =
+new FileReader();
+
+
+
+reader.onload=function(e){
+
+
+let data =
+JSON.parse(
+e.target.result
+);
+
+
+
+shelves =
+data.shelves;
+
+
+catalog =
+data.catalog;
+
+
+save();
+
+
+renderShelves();
+
+renderCatalog();
+
+selectShelf(0);
+
+
+};
+
+
+
+reader.readAsText(file);
+
 
 
 }
@@ -600,6 +744,7 @@ renderCatalog();
 
 if(shelves.length)
 selectShelf(0);
+
 
 
 </script>
