@@ -6,169 +6,424 @@
 <title>Планограмма</title>
 
 <style>
+
 body{
     font-family:Arial,sans-serif;
-    padding:20px;
-    max-width:700px;
+    max-width:900px;
     margin:auto;
+    padding:15px;
+    background:#f5f5f5;
+}
+
+h2,h3{
+    margin-top:20px;
+}
+
+.card{
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:15px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
 
 input{
     width:100%;
-    padding:10px;
-    margin:5px 0;
+    padding:12px;
+    margin-top:5px;
+    margin-bottom:10px;
+    box-sizing:border-box;
 }
 
 button{
     width:100%;
     padding:12px;
-    margin-top:10px;
+    margin-top:8px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
 }
 
-#shelf{
-    margin-top:20px;
-    border:2px solid #333;
-    min-height:80px;
-    padding:10px;
-    display:flex;
-    flex-wrap:wrap;
-    gap:5px;
+.primary{
+    background:#2196f3;
+    color:white;
+}
+
+.success{
+    background:#4caf50;
+    color:white;
+}
+
+.danger{
+    background:#f44336;
+    color:white;
 }
 
 .product{
     background:#4caf50;
     color:white;
-    padding:8px;
-    border-radius:5px;
+    padding:10px;
+    border-radius:8px;
+    margin:5px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
 }
+
+.removeBtn{
+    background:white;
+    color:red;
+    border:none;
+    border-radius:5px;
+    width:auto;
+    padding:5px 10px;
+}
+
+#shelf{
+    min-height:100px;
+    border:2px dashed #999;
+    padding:10px;
+    display:flex;
+    flex-wrap:wrap;
+}
+
+.catalogItem{
+    margin-bottom:8px;
+}
+
+.catalogItem button{
+    margin-top:3px;
+}
+
+.info{
+    font-size:18px;
+    font-weight:bold;
+}
+
 </style>
 </head>
-
 <body>
 
-<h2>Планограмма</h2>
+<h2>Планограмма магазина</h2>
+
+<div class="card">
+
+<h3>Полка</h3>
 
 <label>Ширина полки (см)</label>
 <input type="number" id="shelfWidth">
 
+<div class="info" id="info">
+Свободно: 0 см
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>Товар</h3>
+
 <label>Название товара</label>
 <input type="text" id="productName">
+
+<label>Штрихкод</label>
+<input type="text" id="barcode">
 
 <label>Ширина товара (см)</label>
 <input type="number" id="productWidth">
 
-<button onclick="addProduct()">Добавить товар</button>
-<button onclick="saveProduct()">Сохранить в каталог</button>
+<label>Высота товара (см)</label>
+<input type="number" id="productHeight">
 
-<h3 id="info">Свободно: 0 см</h3>
+<label>Глубина товара (см)</label>
+<input type="number" id="productDepth">
+
+<button class="primary" onclick="addProduct()">
+Добавить на полку
+</button>
+
+<button class="success" onclick="saveProduct()">
+Сохранить в каталог
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>Полка</h3>
 
 <div id="shelf"></div>
+
+<button class="danger" onclick="clearShelf()">
+Очистить полку
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>Статистика</h3>
+
+<div id="stats">
+Товаров: 0
+</div>
+
+</div>
+
+<div class="card">
+
 <h3>Каталог товаров</h3>
+
 <div id="catalog"></div>
+
+</div>
+
 <script>
+
 let usedWidth = 0;
+let productsOnShelf = [];
 
-function addProduct(){
-
-    const shelfWidth =
-        Number(document.getElementById('shelfWidth').value);
-
-    const productName =
-        document.getElementById('productName').value;
-
-    const productWidth =
-        Number(document.getElementById('productWidth').value);
-
-    if(!shelfWidth || !productName || !productWidth){
-        alert("Заполните поля");
-        return;
-    }
-
-    if(usedWidth + productWidth > shelfWidth){
-        alert("На полке нет места");
-        return;
-    }
-
-    usedWidth += productWidth;
-
-    const item = document.createElement("div");
-    item.className = "product";
-    item.innerText = productName;
-
-    document.getElementById("shelf")
-        .appendChild(item);
-
-    document.getElementById("info")
-        .innerText =
-        "Свободно: " +
-        (shelfWidth - usedWidth) +
-        " см";
-}
 let catalog =
-JSON.parse(localStorage.getItem('catalog') || '[]');
+JSON.parse(
+localStorage.getItem('catalog') || '[]'
+);
 
 renderCatalog();
+updateStats();
 
 function saveProduct(){
 
     const name =
-      document.getElementById('productName').value;
+    document.getElementById('productName').value;
+
+    const barcode =
+    document.getElementById('barcode').value;
 
     const width =
-      Number(document.getElementById('productWidth').value);
+    Number(document.getElementById('productWidth').value);
+
+    const height =
+    Number(document.getElementById('productHeight').value);
+
+    const depth =
+    Number(document.getElementById('productDepth').value);
 
     if(!name || !width){
-        alert("Заполните товар");
+        alert('Заполните товар');
         return;
     }
 
     catalog.push({
         name,
-        width
+        barcode,
+        width,
+        height,
+        depth
     });
 
     localStorage.setItem(
-      'catalog',
-      JSON.stringify(catalog)
+        'catalog',
+        JSON.stringify(catalog)
     );
 
     renderCatalog();
+
+    alert('Товар сохранён');
 }
 
 function renderCatalog(){
 
     const div =
-      document.getElementById('catalog');
+    document.getElementById('catalog');
 
-    div.innerHTML = '';
+    div.innerHTML='';
 
-    catalog.forEach(product => {
+    catalog.forEach(product=>{
+
+        const wrapper =
+        document.createElement('div');
+
+        wrapper.className='catalogItem';
 
         const btn =
-          document.createElement('button');
+        document.createElement('button');
+
+        btn.className='primary';
 
         btn.innerText =
-          product.name +
-          ' (' +
-          product.width +
-          ' см)';
+        product.name +
+        ' | ' +
+        product.width +
+        ' см';
 
-        btn.onclick = () => {
-
-            document.getElementById(
-              'productName'
-            ).value = product.name;
+        btn.onclick=()=>{
 
             document.getElementById(
-              'productWidth'
-            ).value = product.width;
+            'productName'
+            ).value=product.name;
+
+            document.getElementById(
+            'barcode'
+            ).value=product.barcode || '';
+
+            document.getElementById(
+            'productWidth'
+            ).value=product.width;
+
+            document.getElementById(
+            'productHeight'
+            ).value=product.height || '';
+
+            document.getElementById(
+            'productDepth'
+            ).value=product.depth || '';
 
             addProduct();
         };
 
-        div.appendChild(btn);
+        wrapper.appendChild(btn);
+        div.appendChild(wrapper);
     });
-}</script>
+
+}
+
+function addProduct(){
+
+    const shelfWidth =
+    Number(
+    document.getElementById(
+    'shelfWidth'
+    ).value
+    );
+
+    const name =
+    document.getElementById(
+    'productName'
+    ).value;
+
+    const width =
+    Number(
+    document.getElementById(
+    'productWidth'
+    ).value
+    );
+
+    if(!shelfWidth){
+        alert('Введите ширину полки');
+        return;
+    }
+
+    if(!name || !width){
+        alert('Заполните товар');
+        return;
+    }
+
+    if(usedWidth + width > shelfWidth){
+        alert('На полке нет места');
+        return;
+    }
+
+    usedWidth += width;
+
+    const item =
+    document.createElement('div');
+
+    item.className='product';
+
+    const text =
+    document.createElement('span');
+
+    text.innerText =
+    name +
+    ' (' +
+    width +
+    ' см)';
+
+    const remove =
+    document.createElement('button');
+
+    remove.className='removeBtn';
+
+    remove.innerText='✕';
+
+    remove.onclick=()=>{
+
+        usedWidth -= width;
+
+        item.remove();
+
+        const index =
+        productsOnShelf.indexOf(width);
+
+        if(index>-1){
+            productsOnShelf.splice(index,1);
+        }
+
+        updateStats();
+    };
+
+    item.appendChild(text);
+    item.appendChild(remove);
+
+    document.getElementById(
+    'shelf'
+    ).appendChild(item);
+
+    productsOnShelf.push(width);
+
+    updateStats();
+}
+
+function clearShelf(){
+
+    usedWidth=0;
+
+    productsOnShelf=[];
+
+    document.getElementById(
+    'shelf'
+    ).innerHTML='';
+
+    updateStats();
+}
+
+function updateStats(){
+
+    const shelfWidth =
+    Number(
+    document.getElementById(
+    'shelfWidth'
+    ).value
+    ) || 0;
+
+    document.getElementById(
+    'info'
+    ).innerText =
+    'Свободно: ' +
+    Math.max(
+        shelfWidth-usedWidth,
+        0
+    ) +
+    ' см';
+
+    document.getElementById(
+    'stats'
+    ).innerHTML =
+    'Товаров: ' +
+    productsOnShelf.length +
+    '<br>Занято: ' +
+    usedWidth +
+    ' см' +
+    '<br>Свободно: ' +
+    Math.max(
+        shelfWidth-usedWidth,
+        0
+    ) +
+    ' см';
+}
+
+</script>
 
 </body>
 </html>
