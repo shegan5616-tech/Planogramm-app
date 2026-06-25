@@ -1,10 +1,108 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Planogram</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Планограмма</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    padding:20px;
+    max-width:700px;
+    margin:auto;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin:5px 0;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+}
+
+#shelf{
+    margin-top:20px;
+    border:2px solid #333;
+    min-height:80px;
+    padding:10px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:5px;
+}
+
+.product{
+    background:#4caf50;
+    color:white;
+    padding:8px;
+    border-radius:5px;
+}
+</style>
 </head>
+
 <body>
-    <h1>Планограмма магазина</h1>
-    <p>Первый запуск проекта.</p>
+
+<h2>Планограмма</h2>
+
+<label>Ширина полки (см)</label>
+<input type="number" id="shelfWidth">
+
+<label>Название товара</label>
+<input type="text" id="productName">
+
+<label>Ширина товара (см)</label>
+<input type="number" id="productWidth">
+
+<button onclick="addProduct()">Добавить товар</button>
+
+<h3 id="info">Свободно: 0 см</h3>
+
+<div id="shelf"></div>
+
+<script>
+let usedWidth = 0;
+
+function addProduct(){
+
+    const shelfWidth =
+        Number(document.getElementById('shelfWidth').value);
+
+    const productName =
+        document.getElementById('productName').value;
+
+    const productWidth =
+        Number(document.getElementById('productWidth').value);
+
+    if(!shelfWidth || !productName || !productWidth){
+        alert("Заполните поля");
+        return;
+    }
+
+    if(usedWidth + productWidth > shelfWidth){
+        alert("На полке нет места");
+        return;
+    }
+
+    usedWidth += productWidth;
+
+    const item = document.createElement("div");
+    item.className = "product";
+    item.innerText = productName;
+
+    document.getElementById("shelf")
+        .appendChild(item);
+
+    document.getElementById("info")
+        .innerText =
+        "Свободно: " +
+        (shelfWidth - usedWidth) +
+        " см";
+}
+</script>
+
 </body>
 </html>
