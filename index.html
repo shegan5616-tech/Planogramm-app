@@ -58,11 +58,13 @@ button{
 <input type="number" id="productWidth">
 
 <button onclick="addProduct()">Добавить товар</button>
+<button onclick="saveProduct()">Сохранить в каталог</button>
 
 <h3 id="info">Свободно: 0 см</h3>
 
 <div id="shelf"></div>
-
+<h3>Каталог товаров</h3>
+<div id="catalog"></div>
 <script>
 let usedWidth = 0;
 
@@ -102,7 +104,71 @@ function addProduct(){
         (shelfWidth - usedWidth) +
         " см";
 }
-</script>
+let catalog =
+JSON.parse(localStorage.getItem('catalog') || '[]');
+
+renderCatalog();
+
+function saveProduct(){
+
+    const name =
+      document.getElementById('productName').value;
+
+    const width =
+      Number(document.getElementById('productWidth').value);
+
+    if(!name || !width){
+        alert("Заполните товар");
+        return;
+    }
+
+    catalog.push({
+        name,
+        width
+    });
+
+    localStorage.setItem(
+      'catalog',
+      JSON.stringify(catalog)
+    );
+
+    renderCatalog();
+}
+
+function renderCatalog(){
+
+    const div =
+      document.getElementById('catalog');
+
+    div.innerHTML = '';
+
+    catalog.forEach(product => {
+
+        const btn =
+          document.createElement('button');
+
+        btn.innerText =
+          product.name +
+          ' (' +
+          product.width +
+          ' см)';
+
+        btn.onclick = () => {
+
+            document.getElementById(
+              'productName'
+            ).value = product.name;
+
+            document.getElementById(
+              'productWidth'
+            ).value = product.width;
+
+            addProduct();
+        };
+
+        div.appendChild(btn);
+    });
+}</script>
 
 </body>
 </html>
